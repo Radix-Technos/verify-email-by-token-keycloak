@@ -10,9 +10,10 @@ import simonassi.keycloak.admin.models.SimpleMessageModel;
 import simonassi.keycloak.admin.requests.sendTokenToUserRequest;
 import simonassi.keycloak.admin.responses.IsValidTokenResponse;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class VerifyEmailByTokenResource {
         }catch (EmailException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .header("Access-Control-Allow-Origin", "*")
-                    .entity(e)
+                    .entity(new SimpleMessageModel("Failed to send email: " + e.getMessage()))
                     .build();
         }
     }
@@ -118,8 +119,23 @@ public class VerifyEmailByTokenResource {
                     .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);
 
         } catch (EmailException e) {
-            throw new EmailException("Error to sent email");
+            // Keycloak 26 (angus-mail) propagates SocketTimeoutException from transport.close()
+            // even after the message has been delivered. Treat close-only timeouts as success.
+            if (isCloseTimeoutOnly(e))
+                return;
+            
+            throw new EmailException("Error sending email", e);
         }
+    }
 
+    private boolean isCloseTimeoutOnly(EmailException e) {
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof SocketTimeoutException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 }

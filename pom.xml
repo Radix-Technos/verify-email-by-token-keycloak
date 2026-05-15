@@ -6,7 +6,7 @@
 
     <groupId>simonassi.keycloak</groupId>
     <artifactId>verify-email-by-token-provider</artifactId>
-    <version>1.2</version>
+    <version>1.7</version>
     <packaging>jar</packaging>
 
     <build>
@@ -24,7 +24,7 @@
     </build>
 
     <properties>
-        <keycloak.version>21.1.1</keycloak.version>
+        <keycloak.version>26.6.1</keycloak.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17.0</java.version>
