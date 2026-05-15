@@ -10,9 +10,9 @@ import simonassi.keycloak.admin.models.SimpleMessageModel;
 import simonassi.keycloak.admin.requests.sendTokenToUserRequest;
 import simonassi.keycloak.admin.responses.IsValidTokenResponse;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +61,7 @@ public class VerifyEmailByTokenResource {
         }catch (EmailException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .header("Access-Control-Allow-Origin", "*")
-                    .entity(e)
+                    .entity(new SimpleMessageModel("Failed to send email: " + e.getMessage()))
                     .build();
         }
     }
@@ -118,7 +118,7 @@ public class VerifyEmailByTokenResource {
                     .send("emailVerificationSubject", "email-verification-with-code.ftl", attributes);
 
         } catch (EmailException e) {
-            throw new EmailException("Error to sent email");
+            throw new EmailException("Error sending email", e);
         }
 
     }
